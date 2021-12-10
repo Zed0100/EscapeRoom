@@ -15,7 +15,7 @@ panelWindow.resizable(False, False)
 
 # addNumber function that updates user entry with each button press, will not enter any more if user passes 4 during any guess.
 def addNumber(number):
-    # Prevent user from entering without starting game.
+    # Prevent user from entering numbers without starting game.
     if not(hasStarted):
         return
     if len(currentEntry.cget("text")) >= 4:
@@ -60,16 +60,15 @@ def addZero():
 hintNumbers = [str(randint(0,9)),str(randint(0,9)),str(randint(0,9)),str(randint(0,9))]
 secretCode = hintNumbers[0]+hintNumbers[1]+hintNumbers[2]+hintNumbers[3]
 hasStarted = False
-escaped = False
+ended = False
 attempts = 3
 
-print(secretCode)
 # Photo found at https://unsplash.com/photos/jGbSl2lXcoU by Janus Clemmensen
 escapedImage = PhotoImage(file="Escape.png")
 
-# Check user entry, user will win the game if their entry is correct end game, else it will continue the game.
+# Check user entry, user will win the game if their entry is correct and end game, else it will continue the game.
 def unlock():
-    global escaped
+    global ended
     global attempts
     # Prevent user from entering without starting game.
     if not(hasStarted):
@@ -77,11 +76,14 @@ def unlock():
     if currentEntry.cget("text") == secretCode:
         print("Correct!")
         hint.configure(text = "You escaped!")
-        escaped = True
+        ended = True
         castleBG.config(image=escapedImage)
     else:
         attempts -= 1
         hint.configure(text = "Incorrect Password: " + str(attempts) + " attempts left")
+        if attempts == 0:
+            ended = True
+            hint.configure(text = "You set off the alarm. Game over!")
 
 def clearEntry():
     currentEntry.configure(text="")
@@ -139,8 +141,12 @@ mainMenu.place(x=0, y=0, relwidth=1.0, relheight=1.0)
 titleLabel = Label(mainMenu, text = "Excalibur", font=("Courier",25),pady=25,fg="white",bg="black")
 titleLabel.pack()
 
-# Hint indicator, stores most recent clue, set aspect to a large number to prevent new lines.
-hint = Message(text = "Escape the room! Clues will be listed here as you click",aspect = 2000)
+# Game frame that will hold the castle image label
+game = Frame(background,bg="white")
+game.place(x=0, y=0, relwidth=1.0, relheight=1.0)
+
+# Hint indicator, stores most recent clue.
+hint = Label(game, bg = "white", text = "Escape the room! Clues will show here as you click objects", font = ("Helvetica","15"))
 hint.pack()
 
 # Start game by hiding main menu and revealing game. Unfreeze panel input
@@ -153,14 +159,8 @@ def startGame():
 startButton = Button(mainMenu, command = startGame, text = "Start",padx=25,pady=15,font=("Arial",25))
 startButton.pack()
 
-
-# Game frame that will hold the castle image label
-game = Frame(background,bg="white")
-game.place(x=0, y=0, relwidth=1.0, relheight=1.0)
-
-
 # Hints for specific objects in picture, include observations if the object has no clues to give.
-pictureHints = ["On the picture was hastily written ", "In the corner of the frame was a note that said ", "Written with a faint pencil onto the painting, it read"]
+pictureHints = ["On the picture was hastily written ", "In the corner of the frame was a note that said ", "Written with a faint pencil onto the painting, it read "]
 statueHints = ["There was a note engraved that read ", "Scratched into the surface had writing that said ", "otw "]
 statueObservation = ["The statue was too heavy to lift.", "This statue resembled a familiar face.", "You feel like you remember this face."]
 pictureObservation = ["The picture is lightly coated with dust.","You don't recognize the person in this picture."]
@@ -210,7 +210,7 @@ def checkObject(object):
 # Checks if user's mouse position is over an interactive object. Changes hint if object can be interacted.
 def check():
     # Stop checking user input if they escaped
-    if(escaped):
+    if(ended):
         return
     #print(x_coord,y_coord)
     if (420 < x_coord < 550) and (0 < y_coord < 150):
