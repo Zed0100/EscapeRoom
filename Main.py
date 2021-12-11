@@ -63,27 +63,30 @@ hasStarted = False
 ended = False
 attempts = 3
 
-# Photo found at https://unsplash.com/photos/jGbSl2lXcoU by Janus Clemmensen
+# Photo found at https://unsplash.com/photos/jGbSl2lXcoU by Janus Clemmensen and https://unsplash.com/photos/_6Jy1u1BiBs by Denny Müller
 escapedImage = PhotoImage(file="Escape.png")
+lockedImage = PhotoImage(file="Lose.png")
 
 # Check user entry, user will win the game if their entry is correct and end game, else it will continue the game.
 def unlock():
     global ended
     global attempts
-    # Prevent user from entering without starting game.
-    if not(hasStarted):
+    # Prevent user from entering numbers without starting game or after losing.
+    if not(hasStarted) or ended:
         return
     if currentEntry.cget("text") == secretCode:
         print("Correct!")
         hint.configure(text = "You escaped!")
         ended = True
         castleBG.config(image=escapedImage)
+    # Log attempts made, ends game if too many are made.
     else:
         attempts -= 1
         hint.configure(text = "Incorrect Password: " + str(attempts) + " attempts left")
         if attempts == 0:
             ended = True
             hint.configure(text = "You set off the alarm. Game over!")
+            castleBG.config(image=lockedImage)
 
 def clearEntry():
     currentEntry.configure(text="")
@@ -161,7 +164,7 @@ startButton.pack()
 
 # Hints for specific objects in picture, include observations if the object has no clues to give.
 pictureHints = ["On the picture was hastily written ", "In the corner of the frame was a note that said ", "Written with a faint pencil onto the painting, it read "]
-statueHints = ["There was a note engraved that read ", "Scratched into the surface had writing that said ", "otw "]
+statueHints = ["There was a note engraved that read ", "Scratched into the surface had writing that said "]
 statueObservation = ["The statue was too heavy to lift.", "This statue resembled a familiar face.", "You feel like you remember this face."]
 pictureObservation = ["The picture is lightly coated with dust.","You don't recognize the person in this picture."]
 bookHints = ["On the table, the book had writing on it ", "The front of the book read ", "Somebody wrote over the book, it said "]
@@ -173,7 +176,13 @@ boxHints = ["Behind the box was a note that said ", "Under one of the corners wa
 def assignHint():
     hintOrder = hintsAvailable[randint(0,len(hintsAvailable)-1)]
     hintsAvailable.remove(hintOrder)
-    hintText = "#" + str(1+int(hintOrder)) + " = " + str(hintNumbers[int(hintOrder)])
+    hintText = ""
+    # Scramble two hint text to owt for user to decipher.
+    if hintOrder == "1":
+        hintText =  "#owt" + " = " + str(hintNumbers[int(hintOrder)])
+    else:
+        print(hintOrder)
+        hintText = "#" + str(1+int(hintOrder)) + " = " + str(hintNumbers[int(hintOrder)])
     return hintText
 
 hintsAvailable = ['0','1','2','3']
