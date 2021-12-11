@@ -166,7 +166,7 @@ startButton.pack()
 pictureHints = ["On the picture was hastily written ", "In the corner of the frame was a note that said ", "Written with a faint pencil onto the painting, it read "]
 statueHints = ["There was a note engraved that read ", "Scratched into the surface had writing that said "]
 statueObservation = ["The statue was too heavy to lift.", "This statue resembled a familiar face.", "You feel like you remember this face."]
-pictureObservation = ["The picture is lightly coated with dust.","You don't recognize the person in this picture."]
+pictureObservation = ["The picture is lightly coated with dust.","You don't recognize the person in this picture.","It looks like a picture from an older time."]
 bookHints = ["On the table, the book had writing on it ", "The front of the book read ", "Somebody wrote over the book, it said "]
 chandelierObservation = ["A magnificient chandelier, still burning bright.", "You stared at the chandelier, wondering if it was dangerous."]
 candleHints = ["Between the candles was a bowl with a paper ", "Inside the bowl was a small paper "]
@@ -179,9 +179,8 @@ def assignHint():
     hintText = ""
     # Scramble two hint text to owt for user to decipher.
     if hintOrder == "1":
-        hintText =  "#owt" + " = " + str(hintNumbers[int(hintOrder)])
+        hintText =  "#owt" + " = " + str(hintNumbers[int(hintOrder)]) + ". Looks like its scrambled."
     else:
-        print(hintOrder)
         hintText = "#" + str(1+int(hintOrder)) + " = " + str(hintNumbers[int(hintOrder)])
     return hintText
 
@@ -216,14 +215,15 @@ def checkObject(object):
         print("Clue found!")
         hint.configure(text = clues[cluesIndex.index(object)])
         
-# Checks if user's mouse position is over an interactive object. Changes hint if object can be interacted.
+# Checks if user's mouse position is over an interactive object. Changes hint if object has a clue or observation
 def check():
-    # Stop checking user input if they escaped
+    # Stop checking user input if they escaped or failed
     if(ended):
         return
     #print(x_coord,y_coord)
+    # If user selects chandelier, add observation no clues.
     if (420 < x_coord < 550) and (0 < y_coord < 150):
-        checkObject("Chandelier")
+        hint.configure(text = chandelierObservation[randint(0,len(chandelierObservation)-1)])
     elif (415 < x_coord < 575) and (290 < y_coord < 400):
         checkObject("Book")
     elif (0 < x_coord < 180) and (413 < y_coord < 560):
@@ -231,9 +231,15 @@ def check():
     elif (855 < x_coord < 1000) and (0 < y_coord < 332):
         checkObject("Picture")
     elif (645 < x_coord < 700) and (190 < y_coord < 375):
-        checkObject("Statue")
+        if hasClue.count("Statue"):
+            checkObject("Statue")
+        else:
+            hint.configure(text = statueObservation[randint(0,len(statueObservation)-1)])
     elif (750 < x_coord < 1000) and (370 < y_coord < 560):
         checkObject("Candles")
+    # Add observations for generic objects. This one includes the small pictures.
+    elif ((205 < x_coord < 270) and (170 < y_coord < 301)) or ((711 < x_coord < 835) and (111 < y_coord < 325)):
+        hint.configure(text = pictureObservation[randint(0,len(pictureObservation)-1)])
 
 
 # Label holds main interactive image, grid at 0 by default unless room is changed
