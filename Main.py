@@ -75,7 +75,6 @@ boxHints = ["Behind the box was a note that said ", "Under one of the corners wa
 
 # Place numbers on clue objects randomly and store correct number sequence.
 def assignHint():
-    print(hintsAvailable)
     hintOrder = hintsAvailable[randint(0,len(hintsAvailable)-1)]
     hintsAvailable.remove(hintOrder)
     hintText = ""
