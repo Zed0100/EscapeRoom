@@ -224,6 +224,7 @@ def restartGame():
     attempts = 3
     hintsAvailable = ['0','1','2','3']
     clues = ["","","","",""]
+    hasClue = []
 
     # Randomize 2 clues, set only one object to have a clue
     pictureHasClue = randint(1,2) == 1
