@@ -63,9 +63,56 @@ hasStarted = False
 ended = False
 attempts = 3
 
+# Hints for specific objects in picture, include observations if the object has no clues to give.
+pictureHints = ["On the picture was hastily written ", "In the corner of the frame was a note that said ", "Written with a faint pencil onto the painting, it read "]
+statueHints = ["There was a note engraved that read ", "Scratched into the surface had writing that said "]
+statueObservation = ["The statue was too heavy to lift.", "This statue resembled a familiar face.", "You feel like you remember this face."]
+pictureObservation = ["The picture is lightly coated with dust.","You don't recognize the person in this picture.","It looks like a picture from an older time."]
+bookHints = ["On the table, the book had writing on it ", "The front of the book read ", "Somebody wrote over the book, it said "]
+chandelierObservation = ["A magnificient chandelier, still burning bright.", "You stared at the chandelier, wondering if it was dangerous."]
+candleHints = ["Between the candles was a bowl with a paper ", "Inside the bowl was a small paper "]
+boxHints = ["Behind the box was a note that said ", "Under one of the corners was a note that said "]
+
+# Place numbers on clue objects randomly and store correct number sequence.
+def assignHint():
+    print(hintsAvailable)
+    hintOrder = hintsAvailable[randint(0,len(hintsAvailable)-1)]
+    hintsAvailable.remove(hintOrder)
+    hintText = ""
+    # Scramble two hint text to owt for user to decipher.
+    if hintOrder == "1":
+        hintText =  '"#owt' + " = " + str(hintNumbers[int(hintOrder)]) + '". Looks like its scrambled.'
+    else:
+        hintText = '"#' + str(1+int(hintOrder)) + " = " + str(hintNumbers[int(hintOrder)]) + '"'
+    return hintText
+
+# Stores all clues in current game instance
+hintsAvailable = ['0','1','2','3']
+hasClue = []
+cluesIndex = ["Book","Picture","Statue","Candles","Box"]
+clues = ["","","","",""]
+
 # Photo found at https://unsplash.com/photos/jGbSl2lXcoU by Janus Clemmensen and https://unsplash.com/photos/_6Jy1u1BiBs by Denny Müller
 escapedImage = PhotoImage(file="Escape.png")
 lockedImage = PhotoImage(file="Lose.png")
+
+# Randomize 2 clues, set only one object to have a clue
+pictureHasClue = randint(1,2) == 1
+if not pictureHasClue:
+    hasClue.append("Statue")
+    clues[2] = statueHints[randint(0,len(statueHints)-1)] + assignHint()
+else:
+    hasClue.append("Picture")
+    clues[1] = pictureHints[randint(0,len(pictureHints)-1)] + assignHint()
+
+# Clues will always be on candles, box, and book.
+hasClue.append("Book")
+clues[0] = bookHints[randint(0,len(bookHints)-1)] + assignHint()
+hasClue.append("Candles")
+clues[3] = candleHints[randint(0,len(candleHints)-1)] + assignHint()
+hasClue.append("Box")
+clues[4] = boxHints[randint(0,len(boxHints)-1)] + assignHint()
+
 
 # Check user entry, user will win the game if their entry is correct and end game, else it will continue the game.
 def unlock():
@@ -76,16 +123,19 @@ def unlock():
         return
     if currentEntry.cget("text") == secretCode:
         print("Correct!")
-        hint.configure(text = "You escaped!")
+        hint.configure(text = "You escaped! Click the picture to play again.")
         ended = True
         castleBG.config(image=escapedImage)
-    # Log attempts made, ends game if too many are made.
+    # Count attempts made. End game if 0 are left (3 total).
     else:
         attempts -= 1
-        hint.configure(text = "Incorrect Password: " + str(attempts) + " attempts left")
+        if attempts > 1:
+            hint.configure(text = "Incorrect Password. " + str(attempts) + " attempts left")
+        elif attempts == 1:
+            hint.configure(text = "Incorrect Password. " + str(attempts) + " attempt left")
         if attempts == 0:
             ended = True
-            hint.configure(text = "You set off the alarm. Game over!")
+            hint.configure(text = "You set off the alarm. Game over! Click the picture to play again.")
             castleBG.config(image=lockedImage)
 
 def clearEntry():
@@ -162,49 +212,41 @@ def startGame():
 startButton = Button(mainMenu, command = startGame, text = "Start",padx=25,pady=15,font=("Arial",25))
 startButton.pack()
 
-# Hints for specific objects in picture, include observations if the object has no clues to give.
-pictureHints = ["On the picture was hastily written ", "In the corner of the frame was a note that said ", "Written with a faint pencil onto the painting, it read "]
-statueHints = ["There was a note engraved that read ", "Scratched into the surface had writing that said "]
-statueObservation = ["The statue was too heavy to lift.", "This statue resembled a familiar face.", "You feel like you remember this face."]
-pictureObservation = ["The picture is lightly coated with dust.","You don't recognize the person in this picture.","It looks like a picture from an older time."]
-bookHints = ["On the table, the book had writing on it ", "The front of the book read ", "Somebody wrote over the book, it said "]
-chandelierObservation = ["A magnificient chandelier, still burning bright.", "You stared at the chandelier, wondering if it was dangerous."]
-candleHints = ["Between the candles was a bowl with a paper ", "Inside the bowl was a small paper "]
-boxHints = ["Behind the box was a note that said ", "Under one of the corners was a note that said "]
+# Restart game by resetting all global variables to default values. Reuses code below function to refresh values.
+def restartGame():
+    # Get all global variables to reset them
+    global hintNumbers,secretCode,hasStarted,ended,attempts,hintsAvailable,hasClue,clues,hint
 
-# Place numbers on clue objects randomly and store correct number sequence.
-def assignHint():
-    hintOrder = hintsAvailable[randint(0,len(hintsAvailable)-1)]
-    hintsAvailable.remove(hintOrder)
-    hintText = ""
-    # Scramble two hint text to owt for user to decipher.
-    if hintOrder == "1":
-        hintText =  "#owt" + " = " + str(hintNumbers[int(hintOrder)]) + ". Looks like its scrambled."
+    hintNumbers = [str(randint(0,9)),str(randint(0,9)),str(randint(0,9)),str(randint(0,9))]
+    secretCode = hintNumbers[0]+hintNumbers[1]+hintNumbers[2]+hintNumbers[3]
+    hasStarted = True
+    ended = False
+    attempts = 3
+    hintsAvailable = ['0','1','2','3']
+    clues = ["","","","",""]
+
+    # Randomize 2 clues, set only one object to have a clue
+    pictureHasClue = randint(1,2) == 1
+    if not pictureHasClue:
+        hasClue.append("Statue")
+        clues[2] = statueHints[randint(0,len(statueHints)-1)] + assignHint()
     else:
-        hintText = "#" + str(1+int(hintOrder)) + " = " + str(hintNumbers[int(hintOrder)])
-    return hintText
+        hasClue.append("Picture")
+        clues[1] = pictureHints[randint(0,len(pictureHints)-1)] + assignHint()
 
-hintsAvailable = ['0','1','2','3']
-hasClue = ["Book"]
-cluesIndex = ["Book","Picture","Statue","Candles","Box"]
-clues = [bookHints[randint(0,len(bookHints)-1)] + assignHint(),"","","",""]
+    # Clues will always be on candles, box, and book.
+    hasClue.append("Book")
+    clues[0] = bookHints[randint(0,len(bookHints)-1)] + assignHint()
+    hasClue.append("Candles")
+    clues[3] = candleHints[randint(0,len(candleHints)-1)] + assignHint()
+    hasClue.append("Box")
+    clues[4] = boxHints[randint(0,len(boxHints)-1)] + assignHint()
 
-
-# Randomize 2 clues, set only one object to have a clue
-pictureHasClue = randint(1,2) == 1
-if not pictureHasClue:
-    hasClue.append("Statue")
-    clues[2] = statueHints[randint(0,len(statueHints)-1)] + assignHint()
-else:
-    hasClue.append("Picture")
-    clues[1] = pictureHints[randint(0,len(pictureHints)-1)] + assignHint()
-
-# Clues will always be on candles, box, and book.
-hasClue.append("Candles")
-clues[3] = candleHints[randint(0,len(candleHints)-1)] + assignHint()
-hasClue.append("Box")
-clues[4] = boxHints[randint(0,len(boxHints)-1)] + assignHint()
-
+    # Refresh hint, panel entry, and screen image.
+    hint.configure(text = "Escape the room! Clues will show here as you click objects")
+    currentEntry.configure(text="")
+    castleBG.config(image=castleImage)
+    game.tkraise()
 
 # Save user mouse positions, starts at 0.
 x_coord = 0
@@ -219,6 +261,7 @@ def checkObject(object):
 def check():
     # Stop checking user input if they escaped or failed
     if(ended):
+        restartGame()
         return
     #print(x_coord,y_coord)
     # If user selects chandelier, add observation no clues.
